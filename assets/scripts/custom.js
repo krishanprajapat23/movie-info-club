@@ -1,6 +1,8 @@
+const query = document.getElementById("intro-title");
+
 const APIKey = "199f20ed7afdbe0b41908ed0ca3f6cff";
 
-const trending = `https://api.themoviedb.org/3/trending/movie/day?api_key=${APIKey}`;
+const trending = `https://api.themoviedb.org/3/movie/now_playing?api_key=${APIKey}`;
 
 const SEARCHAPI = `https://api.themoviedb.org/3/search/multi?api_key=${APIKey}&language=en-US&page=1&query=`;
 
@@ -30,7 +32,8 @@ async function getMovies(url) {
     })
     .then((data) => {
       //json from our response
-      console.log('-----',data.results);
+      console.log("-----", data.results);
+      //search reesult with name of search query
       showMovies(data.results);
     })
     .catch((err) => {
@@ -57,14 +60,14 @@ function showMovies(movies) {
       overview,
     } = movie;
     const movieEl = document.createElement("div");
+
     // movieEl.setAttribute("class", "movie, col-md-6");
     // or
     movieEl.className = "movie col-md-4 col-lg-3 col-sm-6";
+    // let ntitle = title.replace(/[']/g, "\\'");
 
     movieEl.innerHTML = `
-    <a class="id-url d-none" type="button" href="${
-      window.location.href + "/#" + displayHash(id)
-    }"></a>
+    <button class="id-url btn text-dark btn-warning shadow-none" onclick="goto('${id}')">Know More</button>
     <div class="img-wrapper">
     <img src="${
       "https://image.tmdb.org/t/p//w500" + poster_path
@@ -83,41 +86,56 @@ function showMovies(movies) {
   });
 }
 
-function searchMovie(e) {
+async function searchMovie(e) {
   e.preventDefault();
 
-  const query = document.getElementById('intro-title');
   const searchTerm = search.value;
+  let name = document.querySelector("#intro-title");
 
-   query.innerText = `Showing result for "${searchTerm}"`
-  
   if (searchTerm) {
-    getMovies(SEARCHAPI + searchTerm);
-    search.value = "";
+    async function searchText(url) {
+      const fetchData = fetch(url)
+        .then((response) => {
+          //api call successful
+          if (response.ok) {
+            return response.json();
+          } else {
+            throw Error(response.statusText);
+          }
+        })
+        .then((data) => {
+          if (data.results.length === 0) {
+            name.innerText = `Search Results for: ${searchTerm}`;
+            let errorMsg = document.createElement("h5");
+            name.parentNode.appendChild(errorMsg);
+            errorMsg.innerText = "Oops! No Results were Found!";
+          } else {
+            name.innerHTML = `Search Results for: ${searchTerm}`;
+          }
+          showMovies(data.results);
+        })
+        .catch((err) => {
+          console.warn("data fetching failed", err);
+        });
+    }
+    console.log(searchText(SEARCHAPI + searchTerm));
   }
 }
 
 form.addEventListener("submit", searchMovie);
 
-//=========================================================
-function displayHash(id) {
-  let theHash = window.location.hash;
-  let currentUrl = window.location.href;
-  if (theHash.length == 0) {
-    theHash = id;
-  }
 
-  let elems = document.querySelectorAll(".id-url");
-  window.location.assign = currentUrl + "/" + theHash;
-  return id;
+//dynamic paGE
+function goto(id) {
+  // localStorage.setItem("moviename", name);
+  // localStorage.setItem(
+  //   "movieimg",
+  //   "https://image.tmdb.org/t/p//w500" + address.trim()
+  // );
+  // localStorage.setItem("releasedate", release);
+  // localStorage.setItem("storyline", overview);
+  localStorage.setItem("movieId", id);
+
+  window.location.href = "./movie-info.html";
 }
 
-window.addEventListener("hashchange", function () {
-  console.log("hashchange event");
-  displayHash(id);
-});
-
-window.addEventListener("DOMContentLoaded", function () {
-  console.log("DOMContentLoaded event");
-  displayHash();
-});
