@@ -127,15 +127,7 @@ form.addEventListener("submit", searchMovie);
 
 //dynamic paGE
 function goto(id) {
-  // localStorage.setItem("moviename", name);
-  // localStorage.setItem(
-  //   "movieimg",
-  //   "https://image.tmdb.org/t/p//w500" + address.trim()
-  // );
-  // localStorage.setItem("releasedate", release);
-  // localStorage.setItem("storyline", overview);
   localStorage.setItem("movieId", id);
-
-  window.location.href = "./movie-info.html";
+  window.location.href = "./id.html";
 }
 
